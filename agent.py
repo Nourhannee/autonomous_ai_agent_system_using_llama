@@ -42,14 +42,19 @@ SYSTEM_PROMPT = (
 )
 
 
-def load_llm(model_name: str = config.LLAMA_MODEL) -> ChatGroq:
+
+def load_llm(model_name: str = None) -> ChatGroq:
+    if model_name is None:
+        model_name = config.LLAMA_MODEL
+        
     console.print(f"[bold cyan]Model:[/bold cyan] {model_name} [dim](Groq)[/dim]")
     
     return ChatGroq(
-        model=model_name,           # مثال: llama3-70b-8192 أو llama3-8b-8192
+        model=model_name,
         temperature=config.TEMPERATURE,
-        api_key=config.GROQ_API_KEY,   # مهم جداً
+        api_key=config.GROQ_API_KEY,
         max_tokens=1024,
+        # max_retries=2,     # اختياري
     )
 
 def build_agent(model_name: str = config.LLAMA_MODEL):
