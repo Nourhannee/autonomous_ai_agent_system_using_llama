@@ -1,6 +1,5 @@
 """
 streamlit_app.py - Web UI for the Autonomous Llama Agent
-Run: streamlit run streamlit_app.py
 """
 
 import streamlit as st
@@ -26,7 +25,6 @@ st.markdown("""
 with st.sidebar:
     st.title("⚙️ Settings")
    
-    # Model Selection for Groq
     model_options = {
         "llama-3.3-70b-versatile": "🦙 Llama 3.3 70B (Best)",
         "llama-3.1-70b-versatile": "🦙 Llama 3.1 70B",
@@ -50,30 +48,32 @@ with st.sidebar:
     st.divider()
    
     if st.button("🗑 Clear conversation"):
-        st.session_state.messages = []
-        st.session_state.agent = None
-        st.session_state.thread_id = str(uuid.uuid4())
+        st.session_state.clear()   # أقوى طريقة لتنظيف الـ session
         st.rerun()
-   
+
     st.caption(f"Model: `{model_choice}`")
 
-# ── Session state ───────────────────────────────────────────
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-if "thread_id" not in st.session_state:
-    st.session_state.thread_id = str(uuid.uuid4())
-
+# ── Force Agent Loading ─────────────────────────────────────
 if "agent" not in st.session_state or st.session_state.get("model") != model_choice:
-    with st.spinner(f"Loading {model_choice}..."):
-        st.session_state.agent = build_agent(model_choice)
-        st.session_state.model = model_choice
-        st.session_state.logger = SessionLogger()
+    with st.spinner(f"Loading Agent with {model_choice}... Please wait"):
+        try:
+            st.session_state.agent = build_agent(model_choice)
+            st.session_state.model = model_choice
+            st.session_state.logger = SessionLogger()
+            st.session_state.thread_id = str(uuid.uuid4())
+            st.success("Agent loaded successfully!")
+        except Exception as e:
+            st.error(f"Failed to load agent: {e}")
+            st.stop()
 
 # ── Header ──────────────────────────────────────────────────
 st.title("🦙 Autonomous Llama Agent")
 st.caption("Multi-step reasoning · Dynamic tool selection · Conversation memory")
 
 # ── Chat history ────────────────────────────────────────────
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
@@ -106,9 +106,5 @@ if user_input:
 
             except Exception as e:
                 st.error(f"Agent error: {str(e)}")
-                st.session_state.messages.append({
-                    "role": "assistant", 
-                    "content": f"Error: {str(e)}"
-                })
 
     st.rerun()
