@@ -79,46 +79,24 @@ for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# ── Input ───────────────────────────────────────────────────
-user_input = st.chat_input("Ask anything...  e.g. 'What is the weather in Cairo?'")
+# ── Input Area ───────────────────────────────────────────────────
+col1, col2 = st.columns([20, 1])
 
-if user_input:
-    from langchain_core.messages import HumanMessage
+with col1:
+    user_input = st.chat_input("Ask anything...")
 
-    st.session_state.messages.append({"role": "user", "content": user_input})
-    with st.chat_message("user"):
-        st.markdown(user_input)
+with col2:
+    # أيقونة الرفع (Paperclip)
+    uploaded_file = st.file_uploader(
+        label="",
+        type=["pdf", "txt", "csv", "md", "docx", "png", "jpg", "jpeg"],
+        key="file_uploader_chat",
+        label_visibility="collapsed"
+    )
 
+# معالجة الملف المرفوع
+if uploaded_file is not None:
+    st.session_state.uploaded_file = uploaded_file
     with st.chat_message("assistant"):
-        with st.spinner("Thinking..."):
-            t0 = time.time()
-            try:
-                # ✅ pass thread_id in config so MemorySaver works
-                cfg = {"configurable": {"thread_id": st.session_state.thread_id}}
-
-                response = st.session_state.agent.invoke(
-                    {"messages": [HumanMessage(content=user_input)]},
-                    config=cfg,
-                )
-                elapsed = time.time() - t0
-                output  = extract_output(response)
-
-                st.markdown(output)
-                col1, col2 = st.columns(2)
-                col1.metric("Time", f"{elapsed:.1f}s")
-
-                st.session_state.messages.append({
-                    "role":    "assistant",
-                    "content": output,
-                })
-                st.session_state.logger.log(
-                    user_input,
-                    {"output": output, "intermediate_steps": []}
-                )
-
-            except Exception as e:
-                st.error(f"Agent error: {e}")
-                st.session_state.messages.append({
-                    "role":    "assistant",
-                    "content": f"Error: {e}",
-                })
+        st.success(f"✅ The file uploaded: **{uploaded_file.name}**")
+        st.caption("The file is now available to the Agent")
