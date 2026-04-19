@@ -7,3 +7,4 @@ ollama
 duckduckgo-search
 requests
 rich
+langchain-groq
