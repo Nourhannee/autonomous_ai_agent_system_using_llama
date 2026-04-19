@@ -30,6 +30,22 @@ SUMMARIZER_MAX_TOKENS = 512
 # ── Web search ─────────────────────────────────────────────────────────────
 WEB_SEARCH_MAX_RESULTS = 5
 
+
+# ── Groq ─────────────────────────────────────────────────────────────
+
+from dotenv import load_dotenv
+load_dotenv()
+# === LLM Config ===
+LLAMA_MODEL = "llama3-70b-8192"        # أو "llama3-8b-8192"
+TEMPERATURE = 0.7
+
+# Groq Configuration
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
+# لو لسه عايز تدعم Ollama (للـ Local Development)
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+
+
 # ── Logging ────────────────────────────────────────────────────────────────
 LOG_DIR      = os.getenv("AGENT_LOG_DIR", "logs")
 LOG_ENABLED  = os.getenv("AGENT_LOGGING", "true").lower() == "true"
