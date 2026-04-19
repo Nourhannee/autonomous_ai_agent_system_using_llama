@@ -1,3 +1,4 @@
+langchain-ollama
 langchain==0.0.286
 langchain-community==0.0.13
 ollama
