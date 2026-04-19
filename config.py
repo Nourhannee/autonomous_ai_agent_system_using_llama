@@ -36,7 +36,7 @@ WEB_SEARCH_MAX_RESULTS = 5
 from dotenv import load_dotenv
 load_dotenv()
 # === LLM Config ===
-LLAMA_MODEL = "llama3-70b-8192"        # أو "llama3-8b-8192"
+LLAMA_MODEL = "llama-3.3-70b-versatile"
 TEMPERATURE = 0.7
 
 # Groq Configuration
