@@ -1,9 +1,9 @@
+streamlit
+langchain>=0.3.0
+langchain-community>=0.3.0
+langchain-core>=0.3.0
 langchain-ollama
-langchain==0.0.286
-langchain-community==0.0.13
 ollama
 duckduckgo-search
 requests
 rich
-streamlit
-pytest
