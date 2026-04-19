@@ -55,6 +55,10 @@ with st.sidebar:
         st.session_state.thread_id = str(uuid.uuid4())
         if "uploaded_file" in st.session_state:
             del st.session_state.uploaded_file
+        if "file_content" in st.session_state:
+            del st.session_state.file_content
+        if "file_name" in st.session_state:
+            del st.session_state.file_name
         st.rerun()
    
     st.caption(f"Model: `{model_choice}`")
@@ -66,6 +70,10 @@ if "thread_id" not in st.session_state:
     st.session_state.thread_id = str(uuid.uuid4())
 if "uploaded_file" not in st.session_state:
     st.session_state.uploaded_file = None
+if "file_content" not in st.session_state:
+    st.session_state.file_content = None
+if "file_name" not in st.session_state:
+    st.session_state.file_name = None
 
 if "agent" not in st.session_state or st.session_state.get("model") != model_choice:
     with st.spinner(f"Loading {model_choice}..."):
@@ -82,7 +90,7 @@ for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# ── Input Area with Attachment (Grok-style) ─────────────────────────────
+# ── Input Area with Attachment ─────────────────────────────
 col_input, col_attach = st.columns([20, 1.5])
 
 with col_input:
@@ -91,57 +99,49 @@ with col_input:
 with col_attach:
     uploaded_file = st.file_uploader(
         label="",
-        type=["pdf", "txt", "csv", "md", "docx", "png", "jpg", "jpeg"],
+        type=["pdf", "txt", "csv", "md", "docx"],
         key="chat_file_uploader",
         label_visibility="collapsed",
         help="Attach file"
     )
 
-# Process newly uploaded file
-if uploaded_file is not None:
+# Process uploaded file (using toast instead of permanent green message)
+if uploaded_file is not None and st.session_state.uploaded_file != uploaded_file:
     st.session_state.uploaded_file = uploaded_file
-    st.success(f"📎 File attached successfully: **{uploaded_file.name}**")
-    st.caption("The file is now available to the Agent")
+    st.session_state.file_content = uploaded_file.getvalue()
+    st.session_state.file_name = uploaded_file.name
+    st.toast(f"✅ File attached: **{uploaded_file.name}**", icon="📎")
 
 # ── Process User Input ─────────────────────────────────────
 if user_input:
-    # Add user message to chat
     st.session_state.messages.append({"role": "user", "content": user_input})
     with st.chat_message("user"):
         st.markdown(user_input)
 
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
-            t0 = time.time()
             try:
                 cfg = {"configurable": {"thread_id": st.session_state.thread_id}}
                 
-                # Prepare input for the agent
                 agent_input = {
                     "messages": [HumanMessage(content=user_input)]
                 }
                 
-                # Pass the uploaded file to the agent if exists
-                if st.session_state.uploaded_file is not None:
-                    agent_input["uploaded_file"] = st.session_state.uploaded_file
+                # Safely pass file to agent
+                if st.session_state.file_content is not None:
+                    agent_input["file_content"] = st.session_state.file_content
+                    agent_input["file_name"] = st.session_state.file_name
 
                 response = st.session_state.agent.invoke(agent_input, config=cfg)
-                
                 output = extract_output(response)
-                elapsed = time.time() - t0
                 
                 st.markdown(output)
-                
-                # Save to history
-                st.session_state.messages.append({
-                    "role": "assistant", 
-                    "content": output
-                })
-                
+                st.session_state.messages.append({"role": "assistant", "content": output})
+
             except Exception as e:
                 st.error(f"Agent error: {str(e)}")
                 st.session_state.messages.append({
-                    "role": "assistant",
+                    "role": "assistant", 
                     "content": f"Error: {str(e)}"
                 })
 
