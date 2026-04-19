@@ -8,6 +8,8 @@ from langchain.agents import create_agent
 from langchain_core.messages import HumanMessage, AIMessage
 from langgraph.checkpoint.memory import MemorySaver
 
+from langchain_groq import ChatGroq
+
 from tools.calculator_tool  import calculator_tool
 from tools.file_reader_tool import file_reader_tool
 from tools.web_search_tool  import web_search_tool
@@ -39,12 +41,15 @@ SYSTEM_PROMPT = (
     "Give a clear, well-structured final response."
 )
 
-def load_llm(model_name: str = config.LLAMA_MODEL) -> ChatOllama:
-    console.print(f"[bold cyan]Model:[/bold cyan] {model_name}  [dim]({config.OLLAMA_BASE_URL})[/dim]")
-    return ChatOllama(
-        model=model_name,
-        base_url=config.OLLAMA_BASE_URL,
+
+def load_llm(model_name: str = config.LLAMA_MODEL) -> ChatGroq:
+    console.print(f"[bold cyan]Model:[/bold cyan] {model_name} [dim](Groq)[/dim]")
+    
+    return ChatGroq(
+        model=model_name,           # مثال: llama3-70b-8192 أو llama3-8b-8192
         temperature=config.TEMPERATURE,
+        api_key=config.GROQ_API_KEY,   # مهم جداً
+        max_tokens=1024,
     )
 
 def build_agent(model_name: str = config.LLAMA_MODEL):
