@@ -24,22 +24,37 @@ st.markdown("""
 # ── Sidebar ────────────────────────────────────────────────
 with st.sidebar:
     st.title("⚙️ Settings")
-    model_choice = st.selectbox(
+    
+    # === Model Selection for Groq ===
+    model_options = {
+        "llama-3.3-70b-versatile": "🦙 Llama 3.3 70B",
+        "llama-3.1-70b-versatile": "🦙 Llama 3.1 70B",
+        "llama-3.1-8b-instant": "⚡ Llama 3.1 8B",
+        "mixtral-8x7b-32768": "🌪️ Mixtral 8x7B"
+    }
+
+    model_display = st.selectbox(
         "Llama model",
-        ["llama3.2:3b", "llama3.1", "llama3.1:70b", "mistral"],
+        options=list(model_options.values()),
         index=0,
     )
+
+    # تحويل الاسم المعروض إلى اسم Groq الحقيقي
+    model_choice = [k for k, v in model_options.items() if v == model_display][0]
+
     st.divider()
     st.subheader("🛠 Available Tools")
     for tool in TOOLS:
         with st.expander(tool.name):
             st.caption(tool.description)
     st.divider()
+    
     if st.button("🗑 Clear conversation"):
-        st.session_state.messages   = []
-        st.session_state.agent      = None
-        st.session_state.thread_id  = str(uuid.uuid4())
+        st.session_state.messages = []
+        st.session_state.agent = None
+        st.session_state.thread_id = str(uuid.uuid4())
         st.rerun()
+    
     st.caption(f"Model: `{model_choice}`")
 
 # ── Session state ───────────────────────────────────────────
